@@ -1,0 +1,56 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <input id="file" type="file" />
+    <input id="send" type="button" value="Send" />
+</div>
+@section scripts{
+<script>
+    $(document).ready(() => {
+        const maxLength = 1024 * 500;
+
+        $(`#send`).click(() => {
+            let file = $(`#file`)[0].files[0];
+            let fileParsition = [];
+            let now = 0;
+            let index = 0;
+            while (now < file.size) {
+                fileParsition.push(sendFile(file.slice(now, Math.min(now + maxLength, file.size)), index));
+                now += maxLength;
+                index++;
+            }
+            Promise.all(fileParsition).then(() => {
+                mkFile();
+            });
+        });
+        async function sendFile(fileData, index) {
+            let formData = new FormData();
+            formData.append('files', fileData);
+            formData.append('fileName', `test_${index}`);
+            await $.ajax({
+                mimeType: 'multipart/form-data',
+                type: 'POST',
+                url: '/Home/UploadFile',
+                data: formData,
+                async: true,
+                contentType: false,
+                processData: false,
+                catch: false
+            });
+        }
+        async function mkFile() {
+            $.ajax({
+                type: 'post',
+                url: '/Home/mkFile',
+                success: () => {
+                    alert("End");
+                }
+            });
+        }
+    });
+</script>
+}
